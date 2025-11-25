@@ -1,0 +1,186 @@
+<div class="book-form-container">
+  <div class="header">
+    <h2>{{ isEditMode ? 'Edit Book' : 'Add New Book' }}</h2>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>{{ error }}</p>
+  </div>
+
+  <div class="isbn-section">
+    <div class="isbn-input-group">
+      <label for="isbn">ISBN (Optional)</label>
+      <div class="isbn-controls">
+        <input 
+          type="text" 
+          id="isbn"
+          [(ngModel)]="book.isbn" 
+          placeholder="Enter ISBN or scan barcode"
+          class="form-input"
+        />
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="showScanner = !showScanner"
+        >
+          📷 Scan Barcode
+        </button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          (click)="fetchBookInfoFromISBN()"
+          [disabled]="!book.isbn || fetchingISBN"
+        >
+          {{ fetchingISBN ? 'Fetching...' : 'Fetch Info' }}
+        </button>
+      </div>
+    </div>
+
+    <app-barcode-scanner 
+      *ngIf="showScanner"
+      (isbnScanned)="onISBNScanned($event)"
+      (cancelled)="showScanner = false"
+    ></app-barcode-scanner>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" class="book-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input 
+          type="text" 
+          id="title"
+          [(ngModel)]="book.title" 
+          name="title"
+          required
+          class="form-input"
+          placeholder="Enter book title"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="author">Author *</label>
+        <input 
+          type="text" 
+          id="author"
+          [(ngModel)]="book.author" 
+          name="author"
+          required
+          class="form-input"
+          placeholder="Enter author name"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="publisher">Publisher</label>
+        <input 
+          type="text" 
+          id="publisher"
+          [(ngModel)]="book.publisher" 
+          name="publisher"
+          class="form-input"
+          placeholder="Enter publisher"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="publication_year">Publication Year</label>
+        <input 
+          type="number" 
+          id="publication_year"
+          [(ngModel)]="book.publication_year" 
+          name="publication_year"
+          class="form-input"
+          placeholder="e.g., 2023"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="language">Language</label>
+        <input 
+          type="text" 
+          id="language"
+          [(ngModel)]="book.language" 
+          name="language"
+          class="form-input"
+          placeholder="e.g., English, Spanish"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="genre">Genre</label>
+        <input 
+          type="text" 
+          id="genre"
+          [(ngModel)]="book.genre" 
+          name="genre"
+          class="form-input"
+          placeholder="e.g., Fiction, Science"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="pages">Pages</label>
+        <input 
+          type="number" 
+          id="pages"
+          [(ngModel)]="book.pages" 
+          name="pages"
+          class="form-input"
+          placeholder="Number of pages"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="location">Physical Location</label>
+        <input 
+          type="text" 
+          id="location"
+          [(ngModel)]="book.location" 
+          name="location"
+          class="form-input"
+          placeholder="e.g., Shelf A, Row 3"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="cover_image_url">Cover Image URL</label>
+      <input 
+        type="url" 
+        id="cover_image_url"
+        [(ngModel)]="book.cover_image_url" 
+        name="cover_image_url"
+        class="form-input"
+        placeholder="https://example.com/cover.jpg"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea 
+        id="description"
+        [(ngModel)]="book.description" 
+        name="description"
+        rows="4"
+        class="form-input"
+        placeholder="Enter book description"
+      ></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancel()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="loading">
+        {{ loading ? 'Saving...' : (isEditMode ? 'Update Book' : 'Add Book') }}
+      </button>
+    </div>
+  </form>
+</div>

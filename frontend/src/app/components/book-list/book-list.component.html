@@ -1,0 +1,95 @@
+<div class="book-list-container">
+  <div class="header">
+    <h2>My Book Collection</h2>
+    <button class="btn btn-primary" routerLink="/books/new">+ Add New Book</button>
+  </div>
+
+  <div class="filters-section" *ngIf="!loading">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (ngModelChange)="applyFilters()"
+        placeholder="Search by title, author, or ISBN..."
+        class="search-input"
+      />
+    </div>
+
+    <div class="filter-controls">
+      <select [(ngModel)]="selectedLanguage" (ngModelChange)="applyFilters()" class="filter-select">
+        <option value="">All Languages</option>
+        <option *ngFor="let lang of filterOptions.languages" [value]="lang">{{ lang }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedGenre" (ngModelChange)="applyFilters()" class="filter-select">
+        <option value="">All Genres</option>
+        <option *ngFor="let genre of filterOptions.genres" [value]="genre">{{ genre }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedAuthor" (ngModelChange)="applyFilters()" class="filter-select">
+        <option value="">All Authors</option>
+        <option *ngFor="let author of filterOptions.authors" [value]="author">{{ author }}</option>
+      </select>
+
+      <button class="btn btn-secondary" (click)="clearFilters()">Clear Filters</button>
+    </div>
+  </div>
+
+  <div class="results-info" *ngIf="!loading">
+    <p>Showing {{ filteredBooks.length }} of {{ books.length }} books</p>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <p>Loading books...</p>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="loadBooks()">Retry</button>
+  </div>
+
+  <div class="books-grid" *ngIf="!loading && !error">
+    <div class="book-card" *ngFor="let book of filteredBooks">
+      <div class="book-cover">
+        <img 
+          *ngIf="book.cover_image_url" 
+          [src]="book.cover_image_url" 
+          [alt]="book.title"
+          (error)="$any($event.target).src='assets/no-cover.png'"
+        />
+        <div *ngIf="!book.cover_image_url" class="no-cover">
+          <span>📚</span>
+        </div>
+      </div>
+      
+      <div class="book-info">
+        <h3 class="book-title">{{ book.title }}</h3>
+        <p class="book-author">by {{ book.author }}</p>
+        
+        <div class="book-meta">
+          <span *ngIf="book.language" class="badge">{{ book.language }}</span>
+          <span *ngIf="book.genre" class="badge">{{ book.genre }}</span>
+          <span *ngIf="book.publication_year" class="badge">{{ book.publication_year }}</span>
+        </div>
+
+        <p class="book-location" *ngIf="book.location">
+          📍 Location: {{ book.location }}
+        </p>
+
+        <div class="book-actions">
+          <button class="btn btn-small btn-secondary" [routerLink]="['/books/edit', book.id]">
+            Edit
+          </button>
+          <button class="btn btn-small btn-danger" (click)="deleteBook(book.id!)">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="filteredBooks.length === 0">
+      <p>No books found matching your criteria.</p>
+      <button class="btn btn-primary" (click)="clearFilters()">Clear Filters</button>
+    </div>
+  </div>
+</div>
