@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Book Keeper",
+    "slug": "book-keeper",
+    "scheme": "bookkeeper",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Book Keeper to scan ISBN barcodes and book covers."
+        }
+      ]
+    ],
+    "extra": {
+      "supabaseUrl": "https://mvcsvnhjuouuavilxkzj.supabase.co"
+    }
+  }
+}
