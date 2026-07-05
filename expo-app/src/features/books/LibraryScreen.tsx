@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { Section } from '@/components/Section';
 import { MetricCard } from '@/components/MetricCard';
-import { AuthPanel } from '@/features/auth/AuthPanel';
 import { signOut, useSession } from '@/lib/auth';
 import { listBooks } from '@/lib/bookRepository';
 import { Book } from '@/lib/types';
@@ -15,7 +14,7 @@ export function LibraryScreen() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { session, supabaseReady } = useSession();
+  const { session } = useSession();
 
   useEffect(() => {
     listBooks()
@@ -55,12 +54,10 @@ export function LibraryScreen() {
         </Pressable>
       </View>
 
-      {!supabaseReady || !session ? <AuthPanel configMissing={!supabaseReady} /> : (
-        <Pressable style={styles.syncBadge} onPress={signOut}>
-          <Ionicons name="cloud-done-outline" color={colors.accent} size={18} />
-          <Text style={styles.syncBadgeText}>Synced as {session.user.email} · Sign out</Text>
-        </Pressable>
-      )}
+      <Pressable style={styles.syncBadge} onPress={signOut}>
+        <Ionicons name="cloud-done-outline" color={colors.accent} size={18} />
+        <Text style={styles.syncBadgeText}>Synced as {session?.user.email ?? 'authenticated user'} · Sign out</Text>
+      </Pressable>
 
       <View style={styles.metrics}>
         <MetricCard label="Books" value={stats.total} />

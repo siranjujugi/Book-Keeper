@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { AuthScreen } from '@/features/auth/AuthScreen';
+import { useSession } from '@/lib/auth';
 import { colors } from '@/theme/colors';
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -11,6 +13,12 @@ function tabIcon(name: IconName) {
 }
 
 export default function TabsLayout() {
+  const { session, loading, supabaseReady } = useSession();
+
+  if (!supabaseReady || loading || !session) {
+    return <AuthScreen configMissing={!supabaseReady} loading={loading} />;
+  }
+
   return (
     <Tabs
       screenOptions={{

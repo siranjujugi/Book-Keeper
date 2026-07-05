@@ -1,9 +1,52 @@
 create extension if not exists pgcrypto;
 create extension if not exists vector;
 
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  display_name text,
+  avatar_url text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, display_name, avatar_url)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'name', new.email),
+    new.raw_user_meta_data->>'avatar_url'
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+create table if not exists public.locations (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  label text not null,
+  room text,
+  shelf text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (owner_id, label)
+);
+
 create table if not exists public.books (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid references auth.users(id) on delete cascade,
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  location_id uuid references public.locations(id) on delete set null,
   title text not null,
   subtitle text,
   isbn_10 text,
@@ -23,7 +66,7 @@ create table if not exists public.books (
 
 create table if not exists public.authors (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid references auth.users(id) on delete cascade,
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   name text not null,
   normalized_name text generated always as (lower(trim(name))) stored,
   created_at timestamptz not null default now(),
@@ -39,7 +82,7 @@ create table if not exists public.book_authors (
 
 create table if not exists public.tags (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid references auth.users(id) on delete cascade,
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   name text not null,
   normalized_name text generated always as (lower(trim(name))) stored,
   created_at timestamptz not null default now(),
@@ -54,7 +97,7 @@ create table if not exists public.book_tags (
 
 create table if not exists public.reading_logs (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid references auth.users(id) on delete cascade,
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   book_id uuid not null references public.books(id) on delete cascade,
   status text not null check (status in ('started', 'paused', 'completed', 'abandoned')),
   started_at date,
@@ -66,7 +109,7 @@ create table if not exists public.reading_logs (
 
 create table if not exists public.loans (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid references auth.users(id) on delete cascade,
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   book_id uuid not null references public.books(id) on delete cascade,
   borrower_name text not null,
   loaned_at date not null default current_date,
@@ -75,9 +118,19 @@ create table if not exists public.loans (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.notes (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  book_id uuid not null references public.books(id) on delete cascade,
+  body text not null,
+  page_number integer,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.ai_enrichment_jobs (
   id uuid primary key default gen_random_uuid(),
-  owner_id uuid references auth.users(id) on delete cascade,
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   book_id uuid references public.books(id) on delete cascade,
   source text not null check (source in ('isbn', 'barcode', 'cover_image', 'manual_text', 'bulk_import')),
   input jsonb not null default '{}'::jsonb,
@@ -90,7 +143,7 @@ create table if not exists public.ai_enrichment_jobs (
 
 create table if not exists public.book_embeddings (
   book_id uuid primary key references public.books(id) on delete cascade,
-  owner_id uuid references auth.users(id) on delete cascade,
+  owner_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   content text not null,
   embedding vector(1536),
   updated_at timestamptz not null default now()
@@ -109,15 +162,91 @@ left join public.book_tags bt on bt.book_id = b.id
 left join public.tags t on t.id = bt.tag_id
 group by b.id;
 
+create index if not exists books_owner_created_idx on public.books(owner_id, created_at desc);
+create index if not exists books_owner_status_idx on public.books(owner_id, status);
+create index if not exists books_owner_language_idx on public.books(owner_id, language);
+create index if not exists books_owner_location_idx on public.books(owner_id, location_id);
+create index if not exists books_isbn_10_idx on public.books(isbn_10) where isbn_10 is not null;
+create index if not exists books_isbn_13_idx on public.books(isbn_13) where isbn_13 is not null;
+create index if not exists reading_logs_book_idx on public.reading_logs(book_id, created_at desc);
+create index if not exists loans_book_idx on public.loans(book_id, loaned_at desc);
+create index if not exists notes_book_idx on public.notes(book_id, created_at desc);
+create index if not exists book_embeddings_embedding_idx on public.book_embeddings using ivfflat (embedding vector_cosine_ops) with (lists = 100);
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+create trigger profiles_set_updated_at
+  before update on public.profiles
+  for each row execute function public.set_updated_at();
+
+create trigger locations_set_updated_at
+  before update on public.locations
+  for each row execute function public.set_updated_at();
+
+create trigger books_set_updated_at
+  before update on public.books
+  for each row execute function public.set_updated_at();
+
+create trigger notes_set_updated_at
+  before update on public.notes
+  for each row execute function public.set_updated_at();
+
+create trigger ai_enrichment_jobs_set_updated_at
+  before update on public.ai_enrichment_jobs
+  for each row execute function public.set_updated_at();
+
+create or replace function public.match_books(
+  query_embedding vector(1536),
+  match_count integer default 10
+)
+returns table (
+  book_id uuid,
+  title text,
+  content text,
+  similarity double precision
+)
+language sql
+stable
+as $$
+  select
+    be.book_id,
+    b.title,
+    be.content,
+    1 - (be.embedding <=> query_embedding) as similarity
+  from public.book_embeddings be
+  join public.books b on b.id = be.book_id
+  where be.owner_id = auth.uid()
+    and be.embedding is not null
+  order by be.embedding <=> query_embedding
+  limit match_count;
+$$;
+
 alter table public.books enable row level security;
+alter table public.profiles enable row level security;
+alter table public.locations enable row level security;
 alter table public.authors enable row level security;
 alter table public.book_authors enable row level security;
 alter table public.tags enable row level security;
 alter table public.book_tags enable row level security;
 alter table public.reading_logs enable row level security;
 alter table public.loans enable row level security;
+alter table public.notes enable row level security;
 alter table public.ai_enrichment_jobs enable row level security;
 alter table public.book_embeddings enable row level security;
+
+create policy "profiles are owned by current user" on public.profiles
+  for all using (auth.uid() = id) with check (auth.uid() = id);
+
+create policy "locations are owned by current user" on public.locations
+  for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
 
 create policy "books are owned by current user" on public.books
   for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
@@ -132,6 +261,9 @@ create policy "reading logs are owned by current user" on public.reading_logs
   for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
 
 create policy "loans are owned by current user" on public.loans
+  for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
+
+create policy "notes are owned by current user" on public.notes
   for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
 
 create policy "ai jobs are owned by current user" on public.ai_enrichment_jobs
@@ -153,3 +285,53 @@ create policy "book tags follow book ownership" on public.book_tags
   ) with check (
     exists (select 1 from public.books b where b.id = book_id and b.owner_id = auth.uid())
   );
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'book-covers',
+  'book-covers',
+  true,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do nothing;
+
+create policy "book cover images are publicly readable" on storage.objects
+  for select using (bucket_id = 'book-covers');
+
+create policy "users can upload their book cover images" on storage.objects
+  for insert with check (
+    bucket_id = 'book-covers'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+create policy "users can update their book cover images" on storage.objects
+  for update using (
+    bucket_id = 'book-covers'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  ) with check (
+    bucket_id = 'book-covers'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+create policy "users can delete their book cover images" on storage.objects
+  for delete using (
+    bucket_id = 'book-covers'
+    and auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+grant usage on schema public to anon, authenticated;
+grant select on public.books_enriched to authenticated;
+grant all on public.profiles to authenticated;
+grant all on public.locations to authenticated;
+grant all on public.books to authenticated;
+grant all on public.authors to authenticated;
+grant all on public.book_authors to authenticated;
+grant all on public.tags to authenticated;
+grant all on public.book_tags to authenticated;
+grant all on public.reading_logs to authenticated;
+grant all on public.loans to authenticated;
+grant all on public.notes to authenticated;
+grant all on public.ai_enrichment_jobs to authenticated;
+grant all on public.book_embeddings to authenticated;
+grant execute on function public.match_books(vector, integer) to authenticated;

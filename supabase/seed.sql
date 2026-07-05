@@ -1,0 +1,2 @@
+-- Intentionally empty for now.
+-- Personal library data should be added through the app or import tooling.

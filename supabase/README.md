@@ -8,11 +8,21 @@ https://mvcsvnhjuouuavilxkzj.supabase.co
 
 ## Apply Schema
 
-Install and login to the Supabase CLI, link this project, then run:
+Install and authenticate the Supabase CLI, link this project, then run:
 
 ```bash
-supabase link --project-ref mvcsvnhjuouuavilxkzj
-supabase db push
+npm install
+npx supabase login
+npm run db:link
+npm run db:push
+```
+
+Non-interactive environments can use:
+
+```bash
+export SUPABASE_ACCESS_TOKEN=your-supabase-access-token
+npm run db:link
+npm run db:push
 ```
 
 ## Required Secrets
@@ -28,7 +38,7 @@ The AI edge function needs a server-side OpenAI key:
 
 ```bash
 supabase secrets set OPENAI_API_KEY=your-openai-key
-supabase functions deploy ai-book-enrichment
+npm run functions:deploy
 ```
 
 Do not put the OpenAI API key in the Expo app.

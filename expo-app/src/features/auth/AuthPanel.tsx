@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { sendMagicLink } from '@/lib/auth';
+import { sendMagicLink, signInWithGitHub } from '@/lib/auth';
 import { colors } from '@/theme/colors';
 
 type Props = {
@@ -12,6 +12,24 @@ export function AuthPanel({ configMissing = false }: Props) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
+
+  async function githubSignIn() {
+    if (configMissing) {
+      setStatus('Add EXPO_PUBLIC_SUPABASE_ANON_KEY to expo-app/.env first.');
+      return;
+    }
+
+    setGithubLoading(true);
+    setStatus(null);
+    try {
+      await signInWithGitHub();
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Could not start GitHub sign-in.');
+    } finally {
+      setGithubLoading(false);
+    }
+  }
 
   async function submit() {
     if (configMissing) {
@@ -36,6 +54,15 @@ export function AuthPanel({ configMissing = false }: Props) {
       <View style={styles.header}>
         <Ionicons name="lock-closed-outline" color={colors.accent} size={22} />
         <Text style={styles.title}>{configMissing ? 'Supabase key required' : 'Sign in to sync your private library'}</Text>
+      </View>
+      <Pressable style={styles.githubButton} onPress={githubSignIn} disabled={githubLoading}>
+        <Ionicons name="logo-github" color={colors.surface} size={19} />
+        <Text style={styles.githubButtonText}>{githubLoading ? 'Opening GitHub...' : 'Continue with GitHub'}</Text>
+      </Pressable>
+      <View style={styles.divider}>
+        <View style={styles.line} />
+        <Text style={styles.dividerText}>or</Text>
+        <View style={styles.line} />
       </View>
       <View style={styles.row}>
         <TextInput
@@ -80,6 +107,37 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: 8
+  },
+  githubButton: {
+    alignItems: 'center',
+    backgroundColor: colors.ink,
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: 14
+  },
+  githubButtonText: {
+    color: colors.surface,
+    fontSize: 15,
+    fontWeight: '900'
+  },
+  divider: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10
+  },
+  line: {
+    backgroundColor: colors.border,
+    flex: 1,
+    height: 1
+  },
+  dividerText: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase'
   },
   input: {
     borderColor: colors.border,
