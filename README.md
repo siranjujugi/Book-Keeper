@@ -109,6 +109,15 @@ npm run functions:deploy
 
 The Expo app calls Supabase functions. OpenAI credentials stay server-side.
 
+The ISBN lookup flow also uses a server-side Google Books key:
+
+```bash
+supabase secrets set GOOGLE_BOOKS_API_KEY=your-google-books-api-key
+npm run functions:deploy
+```
+
+You can also add `GOOGLE_BOOKS_API_KEY` from the Supabase Dashboard under Edge Functions > Secrets.
+
 ## GitHub SSO Setup
 
 In GitHub, create an OAuth app with:
@@ -189,16 +198,35 @@ npm run app:web:build
 - Library tab with searchable collection UI
 - Magic-link Supabase sign-in panel
 - Camera-based ISBN barcode scan screen
+- Bulk ISBN import by pasted CSV/text
 - Assistant tab for planned AI workflows
 - Insights tab for collection stats
 - Sample fallback data when Supabase is not fully configured
 - Initial Supabase schema and AI enrichment Edge Function
 
+## Bulk Import Format
+
+The Import tab accepts one ISBN per line:
+
+```text
+9780593230251
+9780135957059
+```
+
+It also accepts CSV:
+
+```csv
+isbn,location,status
+9780593230251,Shelf A1,unread
+9780135957059,Shelf A1,reading
+```
+
+Supported status values are `unread`, `reading`, `completed`, and `loaned`.
+
 ## Next Implementation Steps
 
 - Add create/edit book screens
 - Save scanned ISBN results into Supabase
-- Connect scan flow to `ai-book-enrichment`
 - Add assistant query Edge Function
 - Add semantic search over `book_embeddings`
 - Add import/export tools for personal backups

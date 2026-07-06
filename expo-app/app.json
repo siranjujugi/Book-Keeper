@@ -16,7 +16,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Book Keeper to scan ISBN barcodes and book covers."
+          "cameraPermission": "Allow Book Keeper to scan ISBN barcodes and book covers.",
+          "barcodeScannerEnabled": true
         }
       ]
     ],

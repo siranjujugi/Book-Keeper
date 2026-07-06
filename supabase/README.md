@@ -42,3 +42,12 @@ npm run functions:deploy
 ```
 
 Do not put the OpenAI API key in the Expo app.
+
+The ISBN lookup function uses Google Books through a server-side secret:
+
+```bash
+supabase secrets set GOOGLE_BOOKS_API_KEY=your-google-books-api-key
+npm run functions:deploy
+```
+
+If `GOOGLE_BOOKS_API_KEY` is missing, the function still attempts an unauthenticated Google Books lookup, but quota behavior is less predictable.
