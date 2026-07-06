@@ -56,7 +56,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 Only put the public Supabase anon key in this file. Do not put the OpenAI API key in the Expo app.
 
-Do not keep server-only values such as `SUPABASE_SECRET_KEY`, service-role keys, or OpenAI keys in `expo-app/.env`. Expo apps are client applications; only `EXPO_PUBLIC_*` values belong there.
+Do not keep server-only values such as `SUPABASE_ACCESS_TOKEN`, service-role keys, or OpenAI keys in `expo-app/.env`. Expo apps are client applications; only `EXPO_PUBLIC_*` values belong there.
 
 ## Database Setup
 
@@ -79,6 +79,8 @@ Or export the token in your shell:
 ```bash
 export SUPABASE_ACCESS_TOKEN=your-supabase-access-token
 ```
+
+For repeat local admin work, keep this token in your shell profile or a root-only local file that is not loaded by Expo. Do not place it under `expo-app/.env`.
 
 Then link and push from the repository root:
 
@@ -117,6 +119,23 @@ npm run functions:deploy
 ```
 
 You can also add `GOOGLE_BOOKS_API_KEY` from the Supabase Dashboard under Edge Functions > Secrets.
+
+## Production Features
+
+The current app supports the core personal-library workflow:
+
+- GitHub or email-link sign-in through Supabase Auth
+- Private row-level-secured book inventory
+- Library search by title, author, language, shelf, and tag
+- Book detail view
+- Reading status changes: unread, reading, completed, loaned
+- Metadata editing for title, authors, ISBNs, publisher, year, language, page count, shelf, rating, cover URL, tags, and description
+- Book deletion with confirmation
+- ISBN scanning and manual ISBN lookup
+- Bulk ISBN paste/import
+- Supabase Edge Function ISBN lookup with Google Books and Open Library fallback
+- Assistant Q&A through the `library-assistant` Edge Function
+- Insights dashboard for status counts, metadata health, language balance, tags, authors, and duplicate watch
 
 ## GitHub SSO Setup
 

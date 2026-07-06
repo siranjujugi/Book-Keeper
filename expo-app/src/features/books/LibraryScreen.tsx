@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { Screen } from '@/components/Screen';
 import { Section } from '@/components/Section';
 import { MetricCard } from '@/components/MetricCard';
@@ -48,7 +49,7 @@ export function LibraryScreen() {
           <Text style={styles.eyebrow}>Personal Library</Text>
           <Text style={styles.title}>Know every book you own.</Text>
         </View>
-        <Pressable style={styles.aiButton}>
+        <Pressable style={styles.aiButton} onPress={() => router.push('/(tabs)/assistant')}>
           <Ionicons name="sparkles-outline" color={colors.surface} size={18} />
           <Text style={styles.aiButtonText}>Ask AI</Text>
         </Pressable>
@@ -87,7 +88,7 @@ export function LibraryScreen() {
 
 function BookRow({ book }: { book: Book }) {
   return (
-    <Pressable style={styles.bookRow}>
+    <Pressable style={styles.bookRow} onPress={() => router.push(`/(tabs)/${book.id}`)}>
       <View style={styles.cover}>
         {book.cover_url ? (
           <Image source={{ uri: book.cover_url }} style={styles.coverImage} />

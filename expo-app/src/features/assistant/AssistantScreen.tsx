@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { Section } from '@/components/Section';
+import { askLibraryAssistant } from '@/lib/assistantService';
+import { listBooks } from '@/lib/bookRepository';
+import { Book } from '@/lib/types';
 import { colors } from '@/theme/colors';
 
 const prompts = [
@@ -14,13 +17,42 @@ const prompts = [
 
 export function AssistantScreen() {
   const [message, setMessage] = useState('');
+  const [books, setBooks] = useState<Book[]>([]);
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [loadingBooks, setLoadingBooks] = useState(true);
+  const [asking, setAsking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    listBooks()
+      .then(setBooks)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoadingBooks(false));
+  }, []);
+
+  async function onAsk() {
+    if (asking) return;
+
+    setAsking(true);
+    setError(null);
+    setAnswer(null);
+
+    try {
+      const response = await askLibraryAssistant(message, books);
+      setAnswer(response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Assistant request failed.');
+    } finally {
+      setAsking(false);
+    }
+  }
 
   return (
     <Screen>
       <View style={styles.header}>
         <Ionicons name="sparkles-outline" color={colors.gold} size={30} />
         <Text style={styles.title}>Library Assistant</Text>
-        <Text style={styles.body}>Ask questions across your collection, notes, shelves, and reading history. AI calls will run through a Supabase Edge Function so API keys stay server-side.</Text>
+        <Text style={styles.body}>Ask questions across your collection, shelves, tags, and reading status. AI calls run through a Supabase Edge Function so API keys stay server-side.</Text>
       </View>
 
       <Section title="Quick Prompts">
@@ -34,6 +66,10 @@ export function AssistantScreen() {
       </Section>
 
       <Section title="Ask">
+        <View style={styles.contextRow}>
+          <Ionicons name="albums-outline" color={colors.accent} size={18} />
+          <Text style={styles.contextText}>{loadingBooks ? 'Loading library context...' : `${books.length} books available to assistant`}</Text>
+        </View>
         <View style={styles.composer}>
           <TextInput
             multiline
@@ -43,14 +79,17 @@ export function AssistantScreen() {
             placeholderTextColor={colors.muted}
             style={styles.input}
           />
-          <Pressable style={styles.sendButton}>
-            <Ionicons name="send" color={colors.surface} size={18} />
+          <Pressable style={[styles.sendButton, asking && styles.sendButtonDisabled]} onPress={onAsk} disabled={asking || loadingBooks}>
+            {asking ? <ActivityIndicator color={colors.surface} /> : <Ionicons name="send" color={colors.surface} size={18} />}
           </Pressable>
         </View>
-        <View style={styles.response}>
-          <Text style={styles.responseTitle}>Planned AI behavior</Text>
-          <Text style={styles.responseText}>The assistant will use structured tool calls for database search, semantic retrieval, metadata cleanup, and book enrichment.</Text>
-        </View>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {answer ? (
+          <View style={styles.response}>
+            <Text style={styles.responseTitle}>Answer</Text>
+            <Text style={styles.responseText}>{answer}</Text>
+          </View>
+        ) : null}
       </Section>
     </Screen>
   );
@@ -102,6 +141,16 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 12
   },
+  contextRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8
+  },
+  contextText: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '800'
+  },
   input: {
     color: colors.ink,
     flex: 1,
@@ -116,6 +165,9 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     width: 44
+  },
+  sendButtonDisabled: {
+    opacity: 0.72
   },
   response: {
     backgroundColor: colors.surfaceAlt,
@@ -133,5 +185,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 21,
     marginTop: 6
+  },
+  error: {
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: '800'
   }
 });
