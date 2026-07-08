@@ -103,3 +103,19 @@ After deployment, test:
 - Assistant answers a simple question
 - Scan/manual ISBN lookup works
 - Insights loads metadata health and duplicate watch
+
+## Troubleshooting
+
+If deployment fails with:
+
+```text
+Could not detect a directory containing static files
+```
+
+Cloudflare is running the Worker deploy command instead of the Pages Direct Upload command. Use this exact deploy command:
+
+```bash
+npx wrangler pages deploy expo-app/dist --project-name book-keeper
+```
+
+Do not use `npx wrangler deploy` for this app unless the project is intentionally converted to Cloudflare Workers Static Assets with a Wrangler assets configuration.
