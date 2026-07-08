@@ -63,4 +63,4 @@ npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 npm run functions:deploy
 ```
 
-Do not put these secrets in the Expo app or Cloudflare Pages environment.
+Do not put these secrets in the Expo app or Cloudflare environment.
