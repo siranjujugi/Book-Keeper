@@ -4,24 +4,35 @@ Book Keeper is a static Expo web app backed by Supabase. Cloudflare Pages can ho
 
 ## Build Settings
 
-Connect the repository to Cloudflare Pages and use these settings:
+Connect the repository to Cloudflare and use these settings:
 
 ```text
 Framework preset: None
-Root directory: /
+Path / Root directory: /
 Build command: npm run app:install && npm run app:web:build
-Build output directory: expo-app/dist
+Deploy command: npx wrangler pages deploy expo-app/dist --project-name book-keeper
 Node.js version: 20 or newer
 ```
 
-Set these Cloudflare Pages environment variables:
+The deploy command uploads the generated `expo-app/dist` folder to the Cloudflare Pages project named `book-keeper`.
+
+Set these Cloudflare build variables:
 
 ```text
 EXPO_PUBLIC_SUPABASE_URL=https://mvcsvnhjuouuavilxkzj.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
 ```
 
-Do not add OpenAI keys, Supabase service-role keys, or `SUPABASE_ACCESS_TOKEN` to Cloudflare Pages. Those belong in Supabase secrets or local admin shells only.
+Set this Cloudflare build secret:
+
+```text
+CLOUDFLARE_API_TOKEN=your-cloudflare-api-token
+```
+
+The API token must include `Account > Cloudflare Pages > Edit` for the account that owns the `book-keeper` Pages project.
+
+Do not add OpenAI keys, Supabase service-role keys, or `SUPABASE_ACCESS_TOKEN` to Cloudflare. Those belong in Supabase secrets or local admin shells only.
 
 ## Routing
 
@@ -34,7 +45,7 @@ expo-app/public/_redirects
 expo-app/public/_headers
 ```
 
-After `npm run app:web:build`, Expo copies them into `expo-app/dist`.
+After `npm run app:web:build`, the root build script copies those files into `expo-app/dist`.
 
 ## Supabase Auth Configuration
 

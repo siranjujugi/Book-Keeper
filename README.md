@@ -36,7 +36,7 @@ EXPO_PUBLIC_SUPABASE_URL=https://mvcsvnhjuouuavilxkzj.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-or-publishable-key
 ```
 
-Only `EXPO_PUBLIC_*` values belong in `expo-app/.env` or Cloudflare Pages. Do not put `SUPABASE_ACCESS_TOKEN`, service-role keys, OpenAI keys, or Google API keys in the Expo app.
+Only `EXPO_PUBLIC_*` values belong in `expo-app/.env` or Cloudflare build variables. Do not put `SUPABASE_ACCESS_TOKEN`, service-role keys, OpenAI keys, or Google API keys in the Expo app.
 
 Server-side secrets belong in Supabase:
 
@@ -188,7 +188,7 @@ http://localhost:8081/auth/callback
 bookkeeper://auth/callback
 ```
 
-For production, set the GitHub OAuth Homepage URL to the Cloudflare Pages URL. The Authorization callback URL remains:
+For production, set the GitHub OAuth Homepage URL to the Cloudflare app URL. The Authorization callback URL remains:
 
 ```text
 https://mvcsvnhjuouuavilxkzj.supabase.co/auth/v1/callback
