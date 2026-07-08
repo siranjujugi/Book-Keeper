@@ -5,14 +5,17 @@
   "scripts": {
     "app:install": "npm install --prefix expo-app",
     "app:web": "npm run web --prefix expo-app",
-    "app:web:build": "npm run web:build --prefix expo-app",
+    "app:web:build": "npm run web:build --prefix expo-app && node scripts/copy-cloudflare-pages-files.mjs",
     "app:typecheck": "npm run typecheck --prefix expo-app",
     "db:link": "supabase link --project-ref mvcsvnhjuouuavilxkzj",
     "db:push": "supabase db push",
     "db:lint": "supabase db lint",
-    "functions:deploy": "supabase functions deploy ai-book-enrichment"
+    "functions:deploy": "supabase functions deploy ai-book-enrichment && supabase functions deploy isbn-lookup && supabase functions deploy library-assistant"
   },
   "devDependencies": {
     "supabase": "^2.31.8"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.0"
   }
 }

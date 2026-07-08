@@ -1,5 +1,4 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { AuthPanel } from '@/features/auth/AuthPanel';
 import { colors } from '@/theme/colors';
@@ -13,9 +12,6 @@ export function AuthScreen({ configMissing = false, loading = false }: Props) {
   return (
     <Screen>
       <View style={styles.hero}>
-        <View style={styles.icon}>
-          <Ionicons name="library-outline" color={colors.accent} size={30} />
-        </View>
         <Text style={styles.eyebrow}>Book Keeper</Text>
         <Text style={styles.title}>Your private library, organized with AI.</Text>
         <Text style={styles.body}>
@@ -42,14 +38,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 12,
     padding: 20
-  },
-  icon: {
-    alignItems: 'center',
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: 8,
-    height: 52,
-    justifyContent: 'center',
-    width: 52
   },
   eyebrow: {
     color: colors.accent,

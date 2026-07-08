@@ -1,0 +1,2 @@
+title,subtitle,authors,isbn_13,isbn_10,publisher,published_year,language,page_count,description,cover_url,location_label,status,tags,rating,notes
+Example Book Title,Optional subtitle,"Author One; Author Two",9780000000000,,Publisher Name,2024,en,320,"Short description or back-cover summary.",https://example.com/cover.jpg,Living room shelf A,unread,"fiction; classics",,

@@ -37,8 +37,10 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Library', tabBarIcon: tabIcon('library-outline') }} />
       <Tabs.Screen name="scan" options={{ title: 'Scan', tabBarIcon: tabIcon('scan-outline') }} />
+      <Tabs.Screen name="import" options={{ title: 'Import', tabBarIcon: tabIcon('cloud-upload-outline') }} />
       <Tabs.Screen name="assistant" options={{ title: 'Assistant', tabBarIcon: tabIcon('sparkles-outline') }} />
       <Tabs.Screen name="insights" options={{ title: 'Insights', tabBarIcon: tabIcon('stats-chart-outline') }} />
+      <Tabs.Screen name="[bookId]" options={{ href: null }} />
     </Tabs>
   );
 }

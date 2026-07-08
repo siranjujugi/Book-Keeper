@@ -1,0 +1,94 @@
+# Cloudflare Pages Deployment
+
+Book Keeper is a static Expo web app backed by Supabase. Cloudflare Pages can host the generated web files at very low cost.
+
+## Build Settings
+
+Connect the repository to Cloudflare Pages and use these settings:
+
+```text
+Framework preset: None
+Root directory: /
+Build command: npm run app:install && npm run app:web:build
+Build output directory: expo-app/dist
+Node.js version: 20 or newer
+```
+
+Set these Cloudflare Pages environment variables:
+
+```text
+EXPO_PUBLIC_SUPABASE_URL=https://mvcsvnhjuouuavilxkzj.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+Do not add OpenAI keys, Supabase service-role keys, or `SUPABASE_ACCESS_TOKEN` to Cloudflare Pages. Those belong in Supabase secrets or local admin shells only.
+
+## Routing
+
+The app uses client-side routes such as `/auth/callback` and book detail URLs. Cloudflare Pages needs an SPA fallback.
+
+This repo includes:
+
+```text
+expo-app/public/_redirects
+expo-app/public/_headers
+```
+
+After `npm run app:web:build`, Expo copies them into `expo-app/dist`.
+
+## Supabase Auth Configuration
+
+After Cloudflare creates the production URL, update Supabase Dashboard > Authentication > URL Configuration.
+
+Set Site URL:
+
+```text
+https://your-cloudflare-pages-domain.pages.dev
+```
+
+Add Redirect URLs:
+
+```text
+https://your-cloudflare-pages-domain.pages.dev
+https://your-cloudflare-pages-domain.pages.dev/auth/callback
+http://localhost:8081
+http://localhost:8081/auth/callback
+bookkeeper://auth/callback
+```
+
+If you add a custom domain later, add both the root URL and `/auth/callback` for that custom domain too.
+
+## GitHub OAuth App
+
+In GitHub OAuth app settings:
+
+```text
+Homepage URL: https://your-cloudflare-pages-domain.pages.dev
+Authorization callback URL: https://mvcsvnhjuouuavilxkzj.supabase.co/auth/v1/callback
+```
+
+The callback URL stays pointed at Supabase because Supabase handles the OAuth exchange.
+
+## Supabase Edge Function Secrets
+
+Confirm these are set in Supabase:
+
+```bash
+supabase secrets set OPENAI_API_KEY=your-openai-api-key
+supabase secrets set GOOGLE_BOOKS_API_KEY=your-google-books-api-key
+npm run functions:deploy
+```
+
+## Smoke Test
+
+After deployment, test:
+
+- GitHub sign-in
+- `/auth/callback` returns to the app instead of 404
+- Library loads
+- Book detail opens
+- Edit metadata and save
+- Change status to Reading/Read
+- Assistant answers a simple question
+- Scan/manual ISBN lookup works
+- Insights loads metadata health and duplicate watch
