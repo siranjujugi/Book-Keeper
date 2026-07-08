@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { AppBrand } from '@/components/AppBrand';
 import { handleAuthCallback } from '@/lib/auth';
 import { colors } from '@/theme/colors';
 
@@ -22,6 +23,9 @@ export default function AuthCallback() {
 
   return (
     <View style={styles.root}>
+      <View style={styles.brand}>
+        <AppBrand />
+      </View>
       <View style={styles.panel}>
         {error ? (
           <>
@@ -48,6 +52,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20
+  },
+  brand: {
+    left: 20,
+    position: 'absolute',
+    top: 20
   },
   panel: {
     alignItems: 'center',

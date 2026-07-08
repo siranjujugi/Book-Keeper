@@ -1,17 +1,39 @@
 # Deployment
 
-## GitHub OAuth Values
+Book Keeper is deployed as a static Expo web app backed by Supabase.
 
-For local development, create the GitHub OAuth app with:
+The recommended deployment target is Cloudflare Pages:
+
+[cloudflare-deployment.md](cloudflare-deployment.md)
+
+## Build
+
+From the repository root:
+
+```bash
+npm run app:web:build
+```
+
+The static output is generated in:
+
+```text
+expo-app/dist
+```
+
+The build copies Cloudflare Pages `_redirects` and `_headers` files into the output directory so client-side routes work on refresh.
+
+## GitHub OAuth
+
+For local development, use:
 
 ```text
 Homepage URL: http://localhost:8081
 Authorization callback URL: https://mvcsvnhjuouuavilxkzj.supabase.co/auth/v1/callback
 ```
 
-The callback URL is Supabase's callback endpoint, not the Expo app URL. Supabase receives the GitHub callback and then redirects back to the app.
+The GitHub authorization callback remains the Supabase callback URL because Supabase handles the OAuth exchange.
 
-In Supabase Authentication settings, allow these redirect URLs for local development:
+In Supabase Authentication settings, allow these local redirect URLs:
 
 ```text
 http://localhost:8081
@@ -19,69 +41,26 @@ http://localhost:8081/auth/callback
 bookkeeper://auth/callback
 ```
 
-For production, use your deployed URL as the GitHub OAuth app Homepage URL, for example:
+For production:
 
-```text
-https://book-keeper.<your-region>.codeengine.appdomain.cloud
-```
-
-Keep the GitHub OAuth Authorization callback URL as:
+1. Deploy to Cloudflare Pages.
+2. Set the GitHub OAuth Homepage URL to the Cloudflare URL.
+3. Keep the GitHub OAuth Authorization callback URL as:
 
 ```text
 https://mvcsvnhjuouuavilxkzj.supabase.co/auth/v1/callback
 ```
 
-Then add the production app callback to Supabase:
+4. Add the Cloudflare app URL and `/auth/callback` URL to Supabase Auth redirect URLs.
 
-```text
-https://book-keeper.<your-region>.codeengine.appdomain.cloud/auth/callback
-```
+## Required Production Secrets
 
-## IBM Cloud Recommendation
-
-For limited resources, the best web deployment path is a static Expo web build.
-
-Preferred low-resource option:
-
-- Build with `npm run app:web:build`
-- Upload `expo-app/dist` to IBM Cloud Object Storage
-- Put a custom domain/CDN in front if needed
-
-This is the cheapest runtime model because there is no always-running server.
-
-Simpler container option:
-
-- Use IBM Cloud Code Engine
-- Build the included `expo-app/Dockerfile`
-- Let Code Engine scale the container down when idle
-
-Code Engine is easier operationally than Kubernetes for this app. Kubernetes is not worth the overhead for a personal static app.
-
-## Build Locally
+Supabase Edge Functions need these secrets:
 
 ```bash
-npm run app:web:build
+npx supabase secrets set OPENAI_API_KEY=your-openai-api-key
+npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-google-books-api-key
+npm run functions:deploy
 ```
 
-The static web output is generated in:
-
-```text
-expo-app/dist
-```
-
-## IBM Code Engine Container
-
-From the repository root:
-
-```bash
-ibmcloud login
-ibmcloud target -g <resource-group>
-ibmcloud ce project create --name book-keeper
-ibmcloud ce project select --name book-keeper
-ibmcloud ce app create --name book-keeper --build-source ./expo-app --port 8080 --min-scale 0 --max-scale 1
-```
-
-After deployment, take the Code Engine app URL and add it to:
-
-- GitHub OAuth app Homepage URL
-- Supabase Auth redirect URLs
+Do not put these secrets in the Expo app or Cloudflare Pages environment.

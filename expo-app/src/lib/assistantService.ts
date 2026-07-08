@@ -1,7 +1,12 @@
 import { supabase, supabaseReady } from '@/lib/supabase';
 import { Book } from '@/lib/types';
 
-export async function askLibraryAssistant(question: string, books: Book[]): Promise<string> {
+export type AssistantChatMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+export async function askLibraryAssistant(question: string, books: Book[], history: AssistantChatMessage[] = []): Promise<string> {
   if (!supabaseReady) {
     throw new Error('Supabase is not configured.');
   }
@@ -14,6 +19,7 @@ export async function askLibraryAssistant(question: string, books: Book[]): Prom
   const { data, error } = await supabase.functions.invoke('library-assistant', {
     body: {
       question: trimmed,
+      history: history.slice(-10),
       books: books.slice(0, 500).map((book) => ({
         title: book.title,
         subtitle: book.subtitle,

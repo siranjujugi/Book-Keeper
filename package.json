@@ -5,7 +5,7 @@
   "scripts": {
     "app:install": "npm install --prefix expo-app",
     "app:web": "npm run web --prefix expo-app",
-    "app:web:build": "npm run web:build --prefix expo-app",
+    "app:web:build": "npm run web:build --prefix expo-app && node scripts/copy-cloudflare-pages-files.mjs",
     "app:typecheck": "npm run typecheck --prefix expo-app",
     "db:link": "supabase link --project-ref mvcsvnhjuouuavilxkzj",
     "db:push": "supabase db push",

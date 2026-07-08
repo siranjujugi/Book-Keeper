@@ -18,6 +18,10 @@ type LibraryBook = {
 type AssistantRequest = {
   question?: string;
   books?: LibraryBook[];
+  history?: {
+    role?: 'user' | 'assistant';
+    content?: string;
+  }[];
 };
 
 const corsHeaders = {
@@ -59,6 +63,13 @@ Deno.serve(async (req) => {
     const input = (await req.json()) as AssistantRequest;
     const question = input.question?.trim();
     const books = (input.books ?? []).filter((book) => book.title).slice(0, 500).map(compactBook);
+    const history = (input.history ?? [])
+      .filter((item) => (item.role === 'user' || item.role === 'assistant') && item.content?.trim())
+      .slice(-10)
+      .map((item) => ({
+        role: item.role,
+        content: item.content!.trim().slice(0, 2000)
+      }));
 
     if (!question) {
       return Response.json({ error: 'Question is required.' }, { status: 400, headers: corsHeaders });
@@ -70,6 +81,7 @@ Deno.serve(async (req) => {
       instructions: [
         'You are a personal library assistant.',
         'Answer only from the provided library JSON.',
+        'Use recent conversation turns to resolve follow-up references such as "those", "them", or "the second one".',
         'If the question cannot be answered from the provided data, say what field or detail is missing.',
         'Be concise and include book titles when making recommendations or reporting counts.'
       ].join(' '),
@@ -78,6 +90,7 @@ Deno.serve(async (req) => {
           role: 'user',
           content: JSON.stringify({
             question,
+            recent_conversation: history,
             library_size: books.length,
             books
           })

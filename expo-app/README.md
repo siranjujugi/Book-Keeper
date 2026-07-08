@@ -1,58 +1,61 @@
-# Book Keeper Universal App
+# Book Keeper Expo App
 
-This is the redesigned React-based Book Keeper app. It is built with Expo so the same codebase can run on iOS, Android, and web.
+This folder contains the Expo app used for Book Keeper web and mobile clients.
 
 ## Stack
 
-- Expo + React Native + Expo Router
+- Expo
+- React Native
+- Expo Router
 - TypeScript
-- Supabase Auth + PostgreSQL
-- Supabase Edge Functions for AI calls
-- OpenAI for structured book enrichment and assistant workflows
+- Supabase client
 
-## Local Setup
+## Environment
 
 Create `expo-app/.env`:
 
 ```bash
 EXPO_PUBLIC_SUPABASE_URL=https://mvcsvnhjuouuavilxkzj.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-or-publishable-key
 ```
 
-Install dependencies:
+Only public Supabase values belong here. Server-side secrets are configured in Supabase Edge Function secrets.
+
+## Run
 
 ```bash
 npm install
-```
-
-Run the app:
-
-```bash
 npm run web
 ```
 
-For mobile:
+Mobile development:
 
 ```bash
 npm run ios
 npm run android
 ```
 
-## Current State
+## Build
 
-Implemented:
+From the repository root:
 
-- Mobile/web app shell with Library, Scan, Assistant, and Insights tabs
-- Supabase client configuration
-- Magic-link sign-in panel
-- Camera barcode scanning screen
-- Rich first-pass UI for collection and insights
-- Sample fallback data when Supabase is not fully configured
+```bash
+npm run app:web:build
+```
 
-Next:
+The static web output is generated in:
 
-- Add create/edit book flows
-- Wire scan results to ISBN lookup and AI enrichment
-- Add assistant edge function invocation
-- Add semantic search over `book_embeddings`
-- Add import/export from the old SQLite schema
+```text
+expo-app/dist
+```
+
+The root build command also copies Cloudflare Pages `_redirects` and `_headers` files into `dist`.
+
+## Main Screens
+
+- Library
+- Book detail and edit
+- Scan
+- Import
+- Assistant
+- Insights

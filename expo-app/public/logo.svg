@@ -1,0 +1,12 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Book Keeper logo</title>
+  <desc id="desc">An open book with a small insight spark above the pages.</desc>
+  <rect width="256" height="256" rx="56" fill="#FFFDF8"/>
+  <path d="M128 88C109.6 71.9 83.9 65.7 58 70.5V172.8C84.3 168.2 109.5 173.8 128 190V88Z" fill="#EEF3F0" stroke="#256F68" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M128 88C146.4 71.9 172.1 65.7 198 70.5V172.8C171.7 168.2 146.5 173.8 128 190V88Z" fill="#EEF3F0" stroke="#256F68" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M128 89V192" stroke="#184F4A" stroke-width="8" stroke-linecap="round"/>
+  <path d="M82 101C96 99.6 107.3 102.1 116 108" stroke="#9EB7B0" stroke-width="7" stroke-linecap="round"/>
+  <path d="M174 101C160 99.6 148.7 102.1 140 108" stroke="#9EB7B0" stroke-width="7" stroke-linecap="round"/>
+  <path d="M194 37L200.5 54.5L218 61L200.5 67.5L194 85L187.5 67.5L170 61L187.5 54.5L194 37Z" fill="#B98128"/>
+  <circle cx="82" cy="197" r="8" fill="#B98128"/>
+</svg>

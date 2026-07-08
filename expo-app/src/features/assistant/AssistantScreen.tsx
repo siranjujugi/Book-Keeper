@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/Screen';
 import { Section } from '@/components/Section';
-import { askLibraryAssistant } from '@/lib/assistantService';
+import { AssistantChatMessage, askLibraryAssistant } from '@/lib/assistantService';
 import { listBooks } from '@/lib/bookRepository';
 import { Book } from '@/lib/types';
 import { colors } from '@/theme/colors';
@@ -18,7 +18,7 @@ const prompts = [
 export function AssistantScreen() {
   const [message, setMessage] = useState('');
   const [books, setBooks] = useState<Book[]>([]);
-  const [answer, setAnswer] = useState<string | null>(null);
+  const [messages, setMessages] = useState<AssistantChatMessage[]>([]);
   const [loadingBooks, setLoadingBooks] = useState(true);
   const [asking, setAsking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,19 +32,36 @@ export function AssistantScreen() {
 
   async function onAsk() {
     if (asking) return;
+    const trimmed = message.trim();
+    if (!trimmed) {
+      setError('Enter a question first.');
+      return;
+    }
 
     setAsking(true);
     setError(null);
-    setAnswer(null);
+    const userMessage: AssistantChatMessage = { role: 'user', content: trimmed };
+    const history = [...messages, userMessage];
+    setMessages(history);
+    setMessage('');
 
     try {
-      const response = await askLibraryAssistant(message, books);
-      setAnswer(response);
+      const response = await askLibraryAssistant(trimmed, books, messages);
+      setMessages([...history, { role: 'assistant', content: response }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Assistant request failed.');
+      setMessages(messages);
+      setMessage(trimmed);
     } finally {
       setAsking(false);
     }
+  }
+
+  function resetChat() {
+    if (asking) return;
+    setMessages([]);
+    setMessage('');
+    setError(null);
   }
 
   return (
@@ -65,11 +82,35 @@ export function AssistantScreen() {
         </View>
       </Section>
 
-      <Section title="Ask">
+      <Section title="Conversation" action={`${messages.length} messages`}>
         <View style={styles.contextRow}>
           <Ionicons name="albums-outline" color={colors.accent} size={18} />
-          <Text style={styles.contextText}>{loadingBooks ? 'Loading library context...' : `${books.length} books available to assistant`}</Text>
+          <Text style={styles.contextText}>{loadingBooks ? 'Loading library context...' : `${books.length} books available, last 10 turns sent`}</Text>
         </View>
+        {messages.length ? (
+          <View style={styles.messages}>
+            {messages.map((item, index) => (
+              <View key={`${item.role}-${index}`} style={[styles.messageBubble, item.role === 'user' ? styles.userBubble : styles.assistantBubble]}>
+                <Text style={[styles.messageRole, item.role === 'user' && styles.userRole]}>{item.role === 'user' ? 'You' : 'Assistant'}</Text>
+                <Text style={[styles.messageText, item.role === 'user' && styles.userMessageText]}>{item.content}</Text>
+              </View>
+            ))}
+            {asking ? (
+              <View style={[styles.messageBubble, styles.assistantBubble]}>
+                <Text style={styles.messageRole}>Assistant</Text>
+                <View style={styles.thinkingRow}>
+                  <ActivityIndicator color={colors.accent} />
+                  <Text style={styles.responseText}>Thinking with conversation context...</Text>
+                </View>
+              </View>
+            ) : null}
+          </View>
+        ) : (
+          <View style={styles.response}>
+            <Text style={styles.responseTitle}>Start a chat</Text>
+            <Text style={styles.responseText}>Ask about your collection, then follow up with references like “those books” or “which of them are Tamil?” during this session.</Text>
+          </View>
+        )}
         <View style={styles.composer}>
           <TextInput
             multiline
@@ -83,13 +124,13 @@ export function AssistantScreen() {
             {asking ? <ActivityIndicator color={colors.surface} /> : <Ionicons name="send" color={colors.surface} size={18} />}
           </Pressable>
         </View>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        {answer ? (
-          <View style={styles.response}>
-            <Text style={styles.responseTitle}>Answer</Text>
-            <Text style={styles.responseText}>{answer}</Text>
-          </View>
+        {messages.length ? (
+          <Pressable style={styles.clearButton} onPress={resetChat} disabled={asking}>
+            <Ionicons name="refresh-outline" color={colors.accent} size={18} />
+            <Text style={styles.clearButtonText}>New Chat</Text>
+          </Pressable>
         ) : null}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
       </Section>
     </Screen>
   );
@@ -168,6 +209,64 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.72
+  },
+  messages: {
+    gap: 10
+  },
+  messageBubble: {
+    borderRadius: 8,
+    gap: 6,
+    padding: 12
+  },
+  userBubble: {
+    alignSelf: 'flex-end',
+    backgroundColor: colors.accent,
+    maxWidth: '92%'
+  },
+  assistantBubble: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.surfaceAlt,
+    maxWidth: '96%'
+  },
+  messageRole: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'uppercase'
+  },
+  userRole: {
+    color: '#dcefeb'
+  },
+  messageText: {
+    color: colors.ink,
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 21
+  },
+  userMessageText: {
+    color: colors.surface
+  },
+  thinkingRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10
+  },
+  clearButton: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  clearButtonText: {
+    color: colors.accent,
+    fontSize: 13,
+    fontWeight: '900'
   },
   response: {
     backgroundColor: colors.surfaceAlt,
