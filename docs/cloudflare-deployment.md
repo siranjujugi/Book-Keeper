@@ -21,16 +21,9 @@ Set these Cloudflare build variables:
 ```text
 EXPO_PUBLIC_SUPABASE_URL=https://mvcsvnhjuouuavilxkzj.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
 ```
 
-Set this Cloudflare build secret:
-
-```text
-CLOUDFLARE_API_TOKEN=your-cloudflare-api-token
-```
-
-The API token must include `Account > Cloudflare Pages > Edit` for the account that owns the `book-keeper` Pages project.
+These are build-time variables. If you add or change them after a deployment already ran, redeploy the app so Expo can bake the values into the static bundle.
 
 Do not add OpenAI keys, Supabase service-role keys, or `SUPABASE_ACCESS_TOKEN` to Cloudflare. Those belong in Supabase secrets or local admin shells only.
 
@@ -119,3 +112,5 @@ npx wrangler pages deploy expo-app/dist --project-name book-keeper
 ```
 
 Do not use `npx wrangler deploy` for this app unless the project is intentionally converted to Cloudflare Workers Static Assets with a Wrangler assets configuration.
+
+If the deployed app says Supabase public environment variables are missing, confirm both `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` are configured for the same Cloudflare environment you deployed, usually Production, and trigger a new deployment.
