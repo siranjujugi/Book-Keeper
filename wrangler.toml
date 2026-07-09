@@ -1,7 +1,0 @@
-{
-  "name": "book-keeper",
-  "compatibility_date": "2026-07-08",
-  "assets": {
-    "directory": "./expo-app/dist"
-  }
-}
