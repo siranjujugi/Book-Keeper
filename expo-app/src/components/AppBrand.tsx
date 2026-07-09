@@ -1,5 +1,4 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { colors } from '@/theme/colors';
 
 type Props = {
@@ -60,15 +59,14 @@ export function LogoMark({ size = 40 }: { size?: number }) {
           }
         ]}
       />
-      <Ionicons
-        name="sparkles"
-        color={colors.gold}
-        size={Math.round(size * 0.27)}
+      <View
         style={[
-          styles.spark,
+          styles.accent,
           {
+            height: Math.round(size * 0.17),
             right: Math.round(size * 0.05),
-            top: Math.round(size * 0.03)
+            top: Math.round(size * 0.06),
+            width: Math.round(size * 0.17)
           }
         ]}
       />
@@ -108,7 +106,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 3
   },
-  spark: {
+  accent: {
+    backgroundColor: colors.surface,
+    borderColor: colors.gold,
+    borderRadius: 2,
+    borderWidth: 1.5,
     position: 'absolute'
   },
   copy: {
