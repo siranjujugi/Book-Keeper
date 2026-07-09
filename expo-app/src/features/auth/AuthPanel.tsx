@@ -16,7 +16,7 @@ export function AuthPanel({ configMissing = false }: Props) {
 
   async function githubSignIn() {
     if (configMissing) {
-      setStatus('Add EXPO_PUBLIC_SUPABASE_ANON_KEY to expo-app/.env first.');
+      setStatus('Supabase public environment variables are missing. Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY, then rebuild.');
       return;
     }
 
@@ -33,7 +33,7 @@ export function AuthPanel({ configMissing = false }: Props) {
 
   async function submit() {
     if (configMissing) {
-      setStatus('Add EXPO_PUBLIC_SUPABASE_ANON_KEY to expo-app/.env first.');
+      setStatus('Supabase public environment variables are missing. Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY, then rebuild.');
       return;
     }
     if (!email.trim()) return;
