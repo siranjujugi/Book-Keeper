@@ -15,7 +15,7 @@ export function AuthScreen({ configMissing = false, loading = false }: Props) {
         <Text style={styles.eyebrow}>Book Keeper</Text>
         <Text style={styles.title}>Your private library, organized with AI.</Text>
         <Text style={styles.body}>
-          Sign in to sync your catalog, scans, notes, reading history, loans, and AI enrichment results securely with Supabase.
+          Create your personal book catalog, scans, notes, reading history and more...
         </Text>
       </View>
       {loading ? (
