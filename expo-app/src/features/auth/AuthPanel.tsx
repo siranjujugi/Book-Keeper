@@ -53,7 +53,7 @@ export function AuthPanel({ configMissing = false }: Props) {
     <View style={styles.panel}>
       <View style={styles.header}>
         <Ionicons name="lock-closed-outline" color={colors.accent} size={22} />
-        <Text style={styles.title}>{configMissing ? 'Supabase key required' : 'Sign in to sync your private library'}</Text>
+        <Text style={styles.title}>{configMissing ? 'Supabase key required' : 'Sign in to create/access your library'}</Text>
       </View>
       <Pressable style={styles.githubButton} onPress={githubSignIn} disabled={githubLoading}>
         <Ionicons name="logo-github" color={colors.surface} size={19} />
