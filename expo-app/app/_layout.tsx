@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import * as Font from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
 import { colors } from '@/theme/colors';
 
 export default function RootLayout() {
@@ -10,7 +12,11 @@ export default function RootLayout() {
   useEffect(() => {
     let mounted = true;
 
-    Ionicons.loadFont()
+    const fontLoad = Platform.OS === 'web'
+      ? Font.loadAsync({ Ionicons: '/fonts/Ionicons.ttf' })
+      : Ionicons.loadFont();
+
+    fontLoad
       .catch(() => undefined)
       .finally(() => {
         if (mounted) setIconsReady(true);
