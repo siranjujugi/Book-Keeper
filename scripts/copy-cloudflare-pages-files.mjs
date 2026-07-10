@@ -4,6 +4,7 @@ import path from 'node:path';
 const root = process.cwd();
 const files = ['_headers', '_redirects', 'favicon.svg', 'favicon.png', 'favicon-64.png', 'favicon-180.png', 'favicon-192.png', 'logo.svg'];
 const distDir = path.join(root, 'expo-app', 'dist');
+const fontFiles = ['Ionicons.ttf'];
 
 for (const file of files) {
   const source = path.join(root, 'expo-app', 'public', file);
@@ -15,6 +16,20 @@ for (const file of files) {
 
   if (!fs.existsSync(path.dirname(target))) {
     throw new Error(`Build output does not exist: ${path.dirname(target)}`);
+  }
+
+  fs.copyFileSync(source, target);
+}
+
+const fontsDir = path.join(distDir, 'fonts');
+fs.mkdirSync(fontsDir, { recursive: true });
+
+for (const fontFile of fontFiles) {
+  const source = path.join(root, 'expo-app', 'public', 'fonts', fontFile);
+  const target = path.join(fontsDir, fontFile);
+
+  if (!fs.existsSync(source)) {
+    throw new Error(`Missing web font: ${source}`);
   }
 
   fs.copyFileSync(source, target);
@@ -37,4 +52,4 @@ if (!html.includes('href="/favicon.svg"')) {
   fs.writeFileSync(indexPath, html.replace('</head>', `    ${faviconMarkup}\n  </head>`));
 }
 
-console.log(`Prepared web distribution files: ${files.join(', ')}`);
+console.log(`Prepared web distribution files: ${[...files, ...fontFiles.map((file) => `fonts/${file}`)].join(', ')}`);
